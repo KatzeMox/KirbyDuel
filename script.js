@@ -1,10 +1,12 @@
 const message = document.getElementById('message');
 const startBtn = document.getElementById('startBtn');
+const slashBtn = document.getElementById('slashBtn');
 
 let canDraw = false;
 let playerReacted = false;
 let level = 0;
 let drawTime = 0;
+let isGameOver = false;
 
 const bosses = [
   { name: "Boss 1", tapTime: 800 },
@@ -15,12 +17,12 @@ const bosses = [
   { name: "Final Boss", tapTime: 50 }
 ];
 
-const gifsContainer = document.createElement('div'); 
+const gifsContainer = document.createElement('div');
 document.body.appendChild(gifsContainer);
 
 startBtn.onclick = () => {
   if (level >= bosses.length) {
-    level = 0; 
+    level = 0;
   }
 
   const currentBoss = bosses[level];
@@ -28,31 +30,38 @@ startBtn.onclick = () => {
   startBtn.disabled = true;
   canDraw = false;
   playerReacted = false;
+  isGameOver = false;
 
   const delayBeforeDraw = Math.random() * 3000 + 2000;
 
   setTimeout(() => {
     message.textContent = 'DRAW!';
     canDraw = true;
-    drawTime = performance.now(); 
+    drawTime = performance.now();
 
-    
     setTimeout(() => {
-      if (!playerReacted) {
+      if (!playerReacted && !isGameOver) {
         const bossTapTime = performance.now() - drawTime;
         message.textContent = `${currentBoss.name} Wins! Boss tapped in ${bossTapTime.toFixed(0)} ms.`;
-        showGif('assets/kirbylose.gif'); 
+        showGif('assets/kirbylose.gif');
       }
     }, currentBoss.tapTime);
   }, delayBeforeDraw);
 };
 
-
-document.addEventListener('click', handlePlayerReact);
-
 document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space') {
-    handlePlayerReact(); 
+  if (e.code === 'Space' && !canDraw) {
+    loseGame();
+  } else if (e.code === 'Space') {
+    handlePlayerReact();
+  }
+});
+
+slashBtn.addEventListener('click', () => {
+  if (!canDraw) {
+    loseGame();
+  } else {
+    handlePlayerReact();
   }
 });
 
@@ -64,11 +73,11 @@ function handlePlayerReact() {
 
     if (reactionTime < bossTapTime) {
       message.textContent = `You Win! You tapped in ${reactionTime.toFixed(0)} ms.`;
-      showGif('assets/kirbywin.gif'); 
-      level++; 
+      showGif('assets/kirbywin.gif');
+      level++;
     } else {
       message.textContent = `Too Slow! You tapped in ${reactionTime.toFixed(0)} ms, boss tapped in ${bossTapTime} ms.`;
-      showGif('assets/kirbylose.gif'); 
+      showGif('assets/kirbylose.gif');
     }
 
     playerReacted = true;
@@ -76,12 +85,21 @@ function handlePlayerReact() {
   }
 }
 
+function loseGame() {
+  message.textContent = 'Too Soon! You Lose. Try Again.';
+  showGif('assets/kirbylose.gif');
+  isGameOver = true;
+  setTimeout(() => {
+    startBtn.disabled = false;
+  }, 1000);
+}
+
 function showGif(gifPath) {
   const gifElement = document.createElement('img');
   gifElement.src = gifPath;
-  gifElement.style.width = '20%'; 
-  gifsContainer.innerHTML = ''; 
+  gifElement.style.width = '20%';
+  gifsContainer.innerHTML = '';
   gifsContainer.appendChild(gifElement);
 
-  startBtn.disabled = false; 
+  startBtn.disabled = false;
 }
