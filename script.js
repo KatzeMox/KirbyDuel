@@ -15,7 +15,7 @@ const bosses = [
   { name: "Final Boss", tapTime: 50 }
 ];
 
-const gifsContainer = document.createElement('div');
+const gifsContainer = document.createElement('div'); 
 document.body.appendChild(gifsContainer);
 
 startBtn.onclick = () => {
@@ -36,41 +36,45 @@ startBtn.onclick = () => {
     canDraw = true;
     drawTime = performance.now(); 
 
-
+    
     setTimeout(() => {
       if (!playerReacted) {
         const bossTapTime = performance.now() - drawTime;
         message.textContent = `${currentBoss.name} Wins! Boss tapped in ${bossTapTime.toFixed(0)} ms.`;
-        showGif('assets/kirbylose.gif');
+        showGif('assets/kirbylose.gif'); 
       }
     }, currentBoss.tapTime);
   }, delayBeforeDraw);
 };
 
+
+document.addEventListener('click', handlePlayerReact);
+
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space') {
-    const now = performance.now();
-    if (!canDraw) {
-      message.textContent = 'Too Soon! You Lose.';
-      showGif('assets/kirbylose.gif');
-    } else if (!playerReacted) {
-      const reactionTime = now - drawTime;
-      const bossTapTime = bosses[level].tapTime;
-
-      if (reactionTime < bossTapTime) {
-        message.textContent = `You Win! You tapped in ${reactionTime.toFixed(0)} ms.`;
-        showGif('assets/kirbywin.gif'); 
-        level++; 
-      } else {
-        message.textContent = `Too Slow! You tapped in ${reactionTime.toFixed(0)} ms, boss tapped in ${bossTapTime} ms.`;
-        showGif('assets/kirbylose.gif'); 
-      }
-
-      playerReacted = true;
-      canDraw = false;
-    }
+    handlePlayerReact(); 
   }
 });
+
+function handlePlayerReact() {
+  if (canDraw) {
+    const now = performance.now();
+    const reactionTime = now - drawTime;
+    const bossTapTime = bosses[level].tapTime;
+
+    if (reactionTime < bossTapTime) {
+      message.textContent = `You Win! You tapped in ${reactionTime.toFixed(0)} ms.`;
+      showGif('assets/kirbywin.gif'); 
+      level++; 
+    } else {
+      message.textContent = `Too Slow! You tapped in ${reactionTime.toFixed(0)} ms, boss tapped in ${bossTapTime} ms.`;
+      showGif('assets/kirbylose.gif'); 
+    }
+
+    playerReacted = true;
+    canDraw = false;
+  }
+}
 
 function showGif(gifPath) {
   const gifElement = document.createElement('img');
